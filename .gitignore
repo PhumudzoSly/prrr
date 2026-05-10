@@ -1,0 +1,25 @@
+.vercel
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies (if you add a bundler or npm later)
+node_modules/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor / IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Logs and caches
+*.log
+.npm-cache/

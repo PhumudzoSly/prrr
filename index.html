@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PRRR</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #00ff41;
+      --green-dim: #00ff4199;
+      --green-faint: #00ff4155;
+      --green-ghost: #00ff4122;
+      --bg: #0d0d0d;
+      --bg-console: #0a0a0a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--green);
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding: 24px;
+      transition: color 0.3s;
+    }
+
+    /* ── roast mode ── */
+    body.roast {
+      --green: #ff7b3a;
+      --green-dim: #ff7b3a99;
+      --green-faint: #ff7b3a55;
+      --green-ghost: #ff7b3a22;
+    }
+
+    /* ── header ── */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .title {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      text-shadow: 0 0 20px var(--green), 0 0 40px var(--green-ghost);
+      user-select: none;
+      line-height: 1;
+      transition: text-shadow 0.3s, color 0.3s;
+    }
+
+    .subtitle {
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      color: var(--green-dim);
+      text-transform: uppercase;
+    }
+
+    .description {
+      font-size: 0.85rem;
+      color: var(--green-faint);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── console ── */
+    .console {
+      width: 100%;
+      max-width: 700px;
+      border: 1px solid var(--green-faint);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 0 30px var(--green-ghost);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .console-bar {
+      background: #111;
+      border-bottom: 1px solid var(--green-faint);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.3s;
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .console-title {
+      font-size: 0.7rem;
+      color: var(--green-faint);
+      margin-left: 4px;
+      letter-spacing: 0.1em;
+      flex: 1;
+      transition: color 0.3s;
+    }
+
+    .roast-toggle {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--green-dim);
+      background: transparent;
+      border: 1px solid var(--green-faint);
+      font-family: inherit;
+      padding: 2px 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .roast-toggle:hover,
+    .roast-toggle.active {
+      background: var(--green);
+      color: var(--bg);
+      border-color: var(--green);
+    }
+
+    .console-body {
+      padding: 20px 24px;
+      background: var(--bg-console);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .line {
+      display: flex;
+      gap: 10px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      align-items: baseline;
+    }
+
+    .prompt { color: var(--green-dim); white-space: nowrap; transition: color 0.3s; }
+
+    .message {
+      color: #e8ffe8;
+      animation: fadein 0.35s ease;
+      word-break: break-word;
+    }
+
+    body.roast .message { color: #fff0e8; }
+
+    .pr-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .pr-label { color: var(--green-dim); white-space: nowrap; transition: color 0.3s; }
+
+    .pr-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--green-faint);
+      color: var(--green-dim);
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      padding: 2px 4px;
+      transition: border-color 0.2s, color 0.3s;
+      min-width: 0;
+    }
+
+    .pr-input::placeholder { color: var(--green-faint); }
+    .pr-input:focus { border-color: var(--green); color: var(--green); }
+
+    .cursor {
+      display: inline-block;
+      width: 9px;
+      height: 1em;
+      background: var(--green);
+      vertical-align: text-bottom;
+      animation: blink 1s step-start infinite;
+      transition: background 0.3s;
+    }
+
+    /* ── buttons ── */
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 9px 22px;
+      background: transparent;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-family: inherit;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s, border-color 0.3s;
+      text-transform: uppercase;
+    }
+
+    .btn:hover {
+      background: var(--green);
+      color: var(--bg);
+      box-shadow: 0 0 14px var(--green-faint);
+    }
+
+    .btn.copied {
+      border-color: #27c93f;
+      color: #27c93f;
+      box-shadow: 0 0 14px #27c93f55;
+    }
+
+    /* ── keyboard hints ── */
+    .hints {
+      font-size: 0.65rem;
+      color: var(--green-faint);
+      letter-spacing: 0.12em;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      transition: color 0.3s;
+    }
+
+    .hints span { white-space: nowrap; }
+    .hints kbd {
+      border: 1px solid var(--green-faint);
+      padding: 0 4px;
+      border-radius: 2px;
+      font-family: inherit;
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(3px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title">PRRR</div>
+    <div class="subtitle">Pull Request Review Requests</div>
+    <div class="description">Request a review for your pull requests in style</div>
+  </div>
+
+  <div class="console">
+    <div class="console-bar">
+      <span class="dot dot-r"></span>
+      <span class="dot dot-y"></span>
+      <span class="dot dot-g"></span>
+      <span class="console-title" id="console-title">prrr — bash — 80x24</span>
+      <button class="roast-toggle" id="roast-toggle" onclick="toggleRoast()">roast mode</button>
+    </div>
+    <div class="console-body">
+      <div class="line">
+        <span class="prompt">$</span>
+        <span id="cmd-line">prrr send-message --channel team --urgent</span>
+      </div>
+      <div class="pr-input-wrap">
+        <span class="pr-label">&gt; pr:</span>
+        <input class="pr-input" id="pr-url" type="url" placeholder="paste your PR link here (optional)" />
+      </div>
+      <div class="line">
+        <span class="prompt">&gt;</span>
+        <span class="message" id="msg"></span>
+      </div>
+      <div class="line" id="url-line" style="display:none;">
+        <span class="prompt">&gt;</span>
+        <span class="message" id="url-display" style="color:var(--green-dim);word-break:break-all;"></span>
+      </div>
+      <div class="line" id="copy-feedback" style="display:none;">
+        <span class="prompt">&gt;</span>
+        <span style="color:#27c93f;">✓ Copied to clipboard.</span>
+      </div>
+      <div class="line">
+        <span class="prompt">$</span>
+        <span><span class="cursor"></span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="btn" onclick="newMessage()">[ new message ]</button>
+    <button class="btn" id="copy-btn" onclick="copyMessage()">[ copy ]</button>
+  </div>
+
+  <div class="hints">
+    <span><kbd>space</kbd> new message</span>
+    <span><kbd>c</kbd> copy</span>
+    <span><kbd>r</kbd> roast mode</span>
+  </div>
+
+  <script src="messages.js"></script>
+  <script>
+    let roastMode = false;
+    let lastIdx = -1;
+
+    function getMessages() {
+      return roastMode ? roastMessages : normalMessages;
+    }
+
+    function buildText() {
+      const msg = document.getElementById('msg').textContent;
+      const url = document.getElementById('pr-url').value.trim();
+      return url ? `${msg}\n${url}` : msg;
+    }
+
+    function updateUrlLine() {
+      const url = document.getElementById('pr-url').value.trim();
+      const line = document.getElementById('url-line');
+      const display = document.getElementById('url-display');
+      if (url) {
+        display.textContent = url;
+        line.style.display = 'flex';
+      } else {
+        line.style.display = 'none';
+      }
+    }
+
+    function newMessage() {
+      const pool = getMessages();
+      if (!pool || !pool.length) {
+        document.getElementById('msg').textContent = 'Error: messages.js failed to load.';
+        return;
+      }
+      let idx;
+      do { idx = Math.floor(Math.random() * pool.length); } while (idx === lastIdx);
+      lastIdx = idx;
+      const el = document.getElementById('msg');
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = '';
+      el.textContent = pool[idx];
+    }
+
+    function toggleRoast() {
+      roastMode = !roastMode;
+      lastIdx = -1;
+      document.body.classList.toggle('roast', roastMode);
+      document.getElementById('roast-toggle').classList.toggle('active', roastMode);
+      document.getElementById('cmd-line').textContent = roastMode
+        ? 'prrr send-message --channel team --roast --no-mercy'
+        : 'prrr send-message --channel team --urgent';
+      newMessage();
+    }
+
+    function showCopiedFeedback() {
+      const btn = document.getElementById('copy-btn');
+      const feedback = document.getElementById('copy-feedback');
+      btn.textContent = '[ copied! ]';
+      btn.classList.add('copied');
+      feedback.style.display = 'flex';
+      setTimeout(() => {
+        btn.textContent = '[ copy ]';
+        btn.classList.remove('copied');
+        feedback.style.display = 'none';
+      }, 2000);
+    }
+
+    function copyMessage() {
+      const text = buildText();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopiedFeedback).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showCopiedFeedback();
+    }
+
+    document.getElementById('pr-url').addEventListener('input', updateUrlLine);
+
+    document.addEventListener('keydown', (e) => {
+      const tag = document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.code === 'Space') { e.preventDefault(); newMessage(); }
+      if (e.key === 'c' || e.key === 'C') copyMessage();
+      if (e.key === 'r' || e.key === 'R') toggleRoast();
+    });
+
+    newMessage();
+  </script>
+</body>
+</html>
